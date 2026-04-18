@@ -1,9 +1,9 @@
-local backdrops = require("utils.backdrops")
+local platform = require("utils.platform")
 
 return {
 	front_end = "WebGpu",
-	webgpu_power_preference = "HighPerformance",
-	max_fps = 120,
+	webgpu_power_preference = platform.is_windows and "HighPerformance" or "LowPower",
+	max_fps = 60,
 
 	-- 更稳、更省重绘
 	animation_fps = 1,
