@@ -1,10 +1,8 @@
-local wezterm = require("wezterm")
-local is_windows = wezterm.target_triple:find("windows") ~= nil
-local is_macos = wezterm.target_triple:find("apple") ~= nil
+local platform = require("utils.platform")
 
 local launch_menu = {}
 
-if is_windows then
+if platform.is_windows then
 	launch_menu = {
 		{
 			label = "WSL: Ubuntu",
@@ -19,7 +17,7 @@ if is_windows then
 			args = { "cmd.exe" },
 		},
 	}
-elseif is_macos then
+elseif platform.is_macos then
 	launch_menu = {
 		{
 			label = "zsh",

@@ -1,11 +1,8 @@
-local backdrops = require("utils.backdrops")
-local wezterm = require("wezterm")
-
-local is_windows = wezterm.target_triple:find("windows") ~= nil
+local platform = require("utils.platform")
 
 return {
 	front_end = "WebGpu",
-	webgpu_power_preference = is_windows and "HighPerformance" or "LowPower",
+	webgpu_power_preference = platform.is_windows and "HighPerformance" or "LowPower",
 	max_fps = 60,
 
 	-- 更稳、更省重绘

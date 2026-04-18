@@ -1,12 +1,12 @@
 local wezterm = require("wezterm")
 local act = wezterm.action
-local is_macos = wezterm.target_triple:find("apple") ~= nil
+local platform = require("utils.platform")
 
-local copy_mods = is_macos and "CMD" or "CTRL|SHIFT"
-local paste_mods = is_macos and "CMD" or "CTRL|SHIFT"
-local search_mods = is_macos and "CMD" or "CTRL|SHIFT"
-local reload_mods = is_macos and "CMD" or "CTRL|SHIFT"
-local font_mods = is_macos and "CMD" or "CTRL"
+local copy_mods = platform.is_macos and "CMD" or "CTRL|SHIFT"
+local paste_mods = platform.is_macos and "CMD" or "CTRL|SHIFT"
+local search_mods = platform.is_macos and "CMD" or "CTRL|SHIFT"
+local reload_mods = platform.is_macos and "CMD" or "CTRL|SHIFT"
+local font_mods = platform.is_macos and "CMD" or "CTRL"
 
 return {
 	disable_default_key_bindings = true,

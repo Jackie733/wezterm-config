@@ -1,7 +1,7 @@
 local wezterm = require("wezterm")
-local is_windows = wezterm.target_triple:find("windows") ~= nil
+local platform = require("utils.platform")
 
-if not is_windows then
+if not platform.is_windows then
 	return {}
 end
 
