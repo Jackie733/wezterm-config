@@ -6,7 +6,7 @@ return {
 		"JetBrainsMono Nerd Font",
 		"Iosevka Nerd Font Mono",
 	}),
-	font_size = platform.is_macos and 12 or 11,
+	font_size = 12,
 
 	freetype_load_target = "Normal",
 	freetype_render_target = "Normal",
