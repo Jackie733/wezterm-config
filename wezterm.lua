@@ -1,4 +1,7 @@
 local Config = require("config")
+local backdrops = require("utils.backdrops")
+
+backdrops:scan_images_dir()
 
 return Config:init()
 	:append(require("config.appearance"))

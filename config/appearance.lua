@@ -1,4 +1,5 @@
 local platform = require("utils.platform")
+local backdrops = require("utils.backdrops")
 
 return {
 	front_end = "WebGpu",

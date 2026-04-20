@@ -60,6 +60,12 @@ function BackDrops:scan_images_dir()
 	return self
 end
 
+---@private
+---@return boolean
+function BackDrops:_has_images()
+	return #self.images > 0 and self.images[self.current_idx] ~= nil
+end
+
 ---Create the `background` options with the current image
 ---@private
 ---@return table
@@ -104,6 +110,11 @@ function BackDrops:initial_options(opts)
 
 	self.no_img = opts.no_img
 	if opts.no_img then
+		return self:_gen_no_img_opts()
+	end
+
+	if not self:_has_images() then
+		wezterm.log_warn("No backdrop images found; falling back to solid background")
 		return self:_gen_no_img_opts()
 	end
 
