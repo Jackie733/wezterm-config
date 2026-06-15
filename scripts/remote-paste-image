@@ -1,0 +1,69 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+REMOTE_HOST="ts"
+REMOTE_DIR="/tmp/codex-images"
+
+TS="$(date +%Y%m%d-%H%M%S)"
+FILENAME="remote-paste-image-$TS.png"
+REMOTE_PATH="$REMOTE_DIR/$FILENAME"
+
+WIN_TEMP_DIR="$(
+  powershell.exe -NoProfile -Command '[System.IO.Path]::GetTempPath()' |
+    tr -d '\r'
+)"
+
+WIN_PATH="${WIN_TEMP_DIR}${FILENAME}"
+WSL_PATH="$(wslpath -u "$WIN_PATH")"
+
+set +e
+
+CLIP_IMAGE_PATH="$WIN_PATH" WSLENV="${WSLENV:+$WSLENV:}CLIP_IMAGE_PATH" powershell.exe -NoProfile -STA -Command '
+Add-Type -AssemblyName System.Windows.Forms
+Add-Type -AssemblyName System.Drawing
+
+$path = $env:CLIP_IMAGE_PATH
+
+if ([string]::IsNullOrWhiteSpace($path)) {
+  Write-Error "Output path is empty"
+  exit 3
+}
+
+if (-not [System.Windows.Forms.Clipboard]::ContainsImage()) {
+  exit 2
+}
+
+$img = [System.Windows.Forms.Clipboard]::GetImage()
+
+if ($null -eq $img) {
+  Write-Error "Clipboard image is null"
+  exit 4
+}
+
+$img.Save($path, [System.Drawing.Imaging.ImageFormat]::Png)
+'
+
+STATUS=$?
+set -e
+
+if [ "$STATUS" -eq 2 ]; then
+  printf "__NO_IMAGE__"
+  exit 0
+fi
+
+if [ "$STATUS" -ne 0 ]; then
+  printf "__ERROR__: failed to read image from clipboard"
+  exit 1
+fi
+
+if [ ! -f "$WSL_PATH" ]; then
+  printf "__ERROR__: image file was not created: %s" "$WSL_PATH"
+  exit 1
+fi
+
+ssh "$REMOTE_HOST" "mkdir -p '$REMOTE_DIR'"
+scp -q "$WSL_PATH" "$REMOTE_HOST:$REMOTE_PATH"
+
+rm -f "$WSL_PATH"
+
+printf "%s" "$REMOTE_PATH"

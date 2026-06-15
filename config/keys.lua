@@ -21,7 +21,7 @@ local function paste_remote_clipboard_image(window, pane)
 		"--exec",
 		"bash",
 		"-lc",
-		"/home/jackie/.local/bin/remote-paste-image",
+		"bash /mnt/c/Users/Jackie/.config/wezterm/scripts/remote-paste-image",
 	})
 
 	stdout = stdout or ""
