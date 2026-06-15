@@ -1,13 +1,55 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REMOTE_HOST="ts"
-REMOTE_DIR="/tmp/codex-images"
+# Capture the current Windows clipboard image from WSL, upload it to a
+# remote SSH host, and print the remote image path for CLI coding tools.
+#
+# Platform:
+# - Designed for Windows + WSL. WezTerm calls it through wsl.exe.
+# - Requires: powershell.exe, wslpath, ssh, scp, and Windows clipboard access.
+# - Not intended for native Linux/macOS sessions; it reads the Windows clipboard
+#   through System.Windows.Forms.
+#
+# Output contract:
+# - stdout must contain exactly one machine-readable result:
+#   - remote POSIX path on success, for example /tmp/codex-images/foo.png
+#   - __NO_IMAGE__ when the Windows clipboard does not contain an image
+#   - __ERROR__: ... for failures
+# - Keep diagnostics off stdout unless they are part of the contract above;
+#   WezTerm reads stdout and inserts the success path into the active pane.
+#
+# Remote configuration:
+# - REMOTE_PASTE_IMAGE_HOST overrides the SSH target. Default: ts.
+#   It must be a reachable SSH config alias, hostname, or user@host target.
+#   SSH auth should be non-interactive because this runs from a key binding.
+# - REMOTE_PASTE_IMAGE_DIR overrides the destination directory.
+#   Default: /tmp/codex-images.
+#   It must be an absolute POSIX path writable by the remote SSH user.
+#   Use simple path characters only: letters, digits, slash, dot, underscore,
+#   and dash. Spaces, quotes, shell metacharacters, and ~ expansion are not
+#   supported intentionally; use an absolute path instead.
+# - /tmp is volatile. For persistent screenshots, set REMOTE_PASTE_IMAGE_DIR
+#   to a user-owned directory such as /home/<user>/codex-images.
+
+REMOTE_HOST="${REMOTE_PASTE_IMAGE_HOST:-ts}"
+REMOTE_DIR="${REMOTE_PASTE_IMAGE_DIR:-/tmp/codex-images}"
+
+if [[ -z "$REMOTE_HOST" || "$REMOTE_HOST" =~ [[:space:]] ]]; then
+  printf "__ERROR__: REMOTE_PASTE_IMAGE_HOST must be a non-empty SSH target without whitespace"
+  exit 1
+fi
+
+if [[ ! "$REMOTE_DIR" =~ ^/[A-Za-z0-9._/-]+$ ]]; then
+  printf "__ERROR__: REMOTE_PASTE_IMAGE_DIR must be a simple absolute POSIX path"
+  exit 1
+fi
 
 TS="$(date +%Y%m%d-%H%M%S)"
 FILENAME="remote-paste-image-$TS.png"
 REMOTE_PATH="$REMOTE_DIR/$FILENAME"
 
+# Ask Windows for the temp directory and convert the resulting file path back
+# into WSL form so the local scp command can read the saved PNG.
 WIN_TEMP_DIR="$(
   powershell.exe -NoProfile -Command '[System.IO.Path]::GetTempPath()' |
     tr -d '\r'
@@ -18,6 +60,8 @@ WSL_PATH="$(wslpath -u "$WIN_PATH")"
 
 set +e
 
+# WSL does not pass arbitrary Linux environment variables to Win32 processes by
+# default. WSLENV explicitly exposes CLIP_IMAGE_PATH to powershell.exe.
 CLIP_IMAGE_PATH="$WIN_PATH" WSLENV="${WSLENV:+$WSLENV:}CLIP_IMAGE_PATH" powershell.exe -NoProfile -STA -Command '
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
@@ -61,6 +105,8 @@ if [ ! -f "$WSL_PATH" ]; then
   exit 1
 fi
 
+# Create the remote directory each time so a fresh machine only needs SSH access
+# and a writable destination parent.
 ssh "$REMOTE_HOST" "mkdir -p '$REMOTE_DIR'"
 scp -q "$WSL_PATH" "$REMOTE_HOST:$REMOTE_PATH"
 
