@@ -3,8 +3,9 @@ local platform = require("utils.platform")
 
 return {
 	font = wezterm.font_with_fallback({
-		"JetBrainsMono Nerd Font",
+		"Maple Mono Normal NF CN",
 		"Iosevka Nerd Font Mono",
+		"JetBrainsMono Nerd Font",
 	}),
 	font_size = 12,
 
