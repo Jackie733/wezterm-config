@@ -18,7 +18,7 @@ return {
 	enable_scroll_bar = false,
 
 	-- background: pass in `true` if you want wezterm to start with focus mode on (no bg images)
-	-- background = backdrops:initial_options({ no_img = false }),
+	background = backdrops:initial_options({ no_img = false }),
 
 	-- 窗口
 	adjust_window_size_when_changing_font_size = false,
@@ -32,7 +32,8 @@ return {
 
 	-- 视觉
 	color_scheme = "Catppuccin Mocha",
-	window_background_opacity = 1.0,
+	window_background_opacity = 0.94,
+	text_background_opacity = 1.0,
 	inactive_pane_hsb = {
 		saturation = 0.92,
 		brightness = 0.82,

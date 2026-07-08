@@ -1,6 +1,7 @@
 local wezterm = require("wezterm")
-local act = wezterm.action
 local platform = require("utils.platform")
+local backdrops = require("utils.backdrops")
+local act = wezterm.action
 
 local copy_mods = platform.is_macos and "CMD" or "CTRL|SHIFT"
 local paste_mods = platform.is_macos and "CMD" or "CTRL|SHIFT"
@@ -71,6 +72,36 @@ return {
 		{ key = "=", mods = font_mods, action = act.IncreaseFontSize },
 		{ key = "-", mods = font_mods, action = act.DecreaseFontSize },
 		{ key = "0", mods = font_mods, action = act.ResetFontSize },
+
+		-- 背景图
+		{
+			key = "n",
+			mods = "CTRL|SHIFT|ALT",
+			action = wezterm.action_callback(function(window)
+				backdrops:cycle_forward(window)
+			end),
+		},
+		{
+			key = "p",
+			mods = "CTRL|SHIFT|ALT",
+			action = wezterm.action_callback(function(window)
+				backdrops:cycle_back(window)
+			end),
+		},
+		{
+			key = "b",
+			mods = "CTRL|SHIFT|ALT",
+			action = wezterm.action_callback(function(window)
+				backdrops:random(window)
+			end),
+		},
+		{
+			key = "f",
+			mods = "CTRL|SHIFT|ALT",
+			action = wezterm.action_callback(function(window)
+				backdrops:toggle_focus(window)
+			end),
+		},
 	},
 
 	mouse_bindings = {
